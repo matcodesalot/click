@@ -1,0 +1,33 @@
+{
+  "name": "@click/server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch --conditions=source --env-file=.env src/index.ts",
+    "build": "tsdown",
+    "start": "node --enable-source-maps --env-file=.env dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@click/shared": "*",
+    "better-auth": "^1.6.5",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "mongodb": "^7.1.1",
+    "mongoose": "^9.4.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "tsdown": "^0.21.9",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
