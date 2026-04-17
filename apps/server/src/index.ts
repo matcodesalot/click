@@ -1,15 +1,11 @@
 import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
 import { toNodeHandler } from "better-auth/node";
 import { RegisterSchema } from "@click/shared";
 import { auth } from "./auth";
 
 const PORT = Number(process.env.PORT ?? 3000);
-const MONGODB_URI = process.env.MONGODB_URI ?? "mongodb://localhost:27017/click";
 const CLIENT_URL = process.env.CLIENT_URL ?? "http://localhost:5173";
-
-await mongoose.connect(MONGODB_URI);
 
 const app = express();
 

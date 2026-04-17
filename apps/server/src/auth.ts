@@ -1,19 +1,27 @@
 import { betterAuth } from "better-auth";
-import { mongodbAdapter } from "@better-auth/mongo-adapter";
-import { MongoClient } from "mongodb";
+import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import mongoose from "mongoose";
+import "./db";
 
-const MONGODB_URI = process.env.MONGODB_URI ?? "mongodb://localhost:27017/click";
-const client = new MongoClient(MONGODB_URI);
-await client.connect();
-const db = client.db();
+const isProd = process.env.NODE_ENV === "production";
 
 export const auth = betterAuth({
-  usePlural: true,
   baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
   secret: process.env.BETTER_AUTH_SECRET,
-  database: mongodbAdapter(db, { client }),
+  database: mongodbAdapter(mongoose.connection.getClient().db(), {
+    usePlural: true,
+  }),
   emailAndPassword: {
     enabled: true,
   },
-  trustedOrigins: ["http://localhost:5173"],
+  trustedOrigins: [process.env.CLIENT_URL ?? "http://localhost:5173"],
+  advanced: isProd
+    ? {
+        defaultCookieAttributes: {
+          sameSite: "none",
+          secure: true,
+          partitioned: true,
+        },
+      }
+    : {},
 });
