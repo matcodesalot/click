@@ -1,56 +1,106 @@
 import { useState } from "react";
-import { LoginSchema, RegisterSchema } from "@click/shared";
 import { authClient, useSession } from "./lib/authClient";
+import { useClicks } from "./lib/useClicks";
+import { AuthDialog } from "./components/AuthDialog";
+import { CounterView } from "./components/CounterView";
+
+type Tab = "counter" | "leaderboard";
 
 export default function App() {
   const { data: session, isPending } = useSession();
-  const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-
-  if (isPending) return <p>Loading…</p>;
-
-  if (session) {
-    return (
-      <div>
-        <h1 className="text-2xl font-bold text-green-600">Hello, {session.user.name}</h1>
-        <button className="bg-green-600 text-white rounded-md p-2" onClick={() => authClient.signOut()}>Sign out</button>
-      </div>
-    );
-  }
-
-  const onSubmit: React.SubmitEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault();
-    setError(null);
-
-    if (mode === "signIn") {
-      const parsed = LoginSchema.safeParse({ email, password });
-      if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Invalid input");
-      const res = await authClient.signIn.email(parsed.data);
-      if (res.error) setError(res.error.message ?? "Sign-in failed");
-    } else {
-      const parsed = RegisterSchema.safeParse({ name, email, password });
-      if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Invalid input");
-      const res = await authClient.signUp.email(parsed.data);
-      if (res.error) setError(res.error.message ?? "Sign-up failed");
-    }
-  };
+  const { counts, session: sessionCount, click } = useClicks(
+    session?.user.id ?? null,
+  );
+  const [tab, setTab] = useState<Tab>("counter");
+  const [authOpen, setAuthOpen] = useState(false);
 
   return (
-    <form onSubmit={onSubmit}>
-      <h1 className="text-2xl font-bold text-green-600">{mode === "signIn" ? "Sign in" : "Create account"}</h1>
-      {mode === "signUp" && (
-        <input className="border border-gray-300 rounded-md p-2" value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" />
-      )}
-      <input className="border border-gray-300 rounded-md p-2" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-      <input className="border border-gray-300 rounded-md p-2" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-      <button className="bg-green-600 text-white rounded-md p-2" type="submit">{mode === "signIn" ? "Sign in" : "Sign up"}</button>
-      <button className="text-green-600" type="button" onClick={() => { setMode(mode === "signIn" ? "signUp" : "signIn"); setError(null); }}>
-        {mode === "signIn" ? "Need an account? Sign up" : "Have an account? Sign in"}
-      </button>
-      {error && <p className="text-red-600">{error}</p>}
-    </form>
+    <div className="min-h-screen bg-neutral-50 text-neutral-900">
+      <header className="border-b border-neutral-200 bg-white">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
+          <span className="text-lg font-semibold tracking-tight">click.</span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setTab("leaderboard")}
+              className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-neutral-50"
+            >
+              Leaderboard
+            </button>
+            {isPending ? null : session ? (
+              <>
+                <span className="hidden text-sm text-neutral-600 sm:inline">
+                  {session.user.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => authClient.signOut()}
+                  className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-neutral-50"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAuthOpen(true)}
+                className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-neutral-50"
+              >
+                Sign in
+              </button>
+            )}
+          </div>
+        </div>
+
+        <nav className="mx-auto flex max-w-3xl gap-2 px-6 pb-3">
+          <TabButton active={tab === "counter"} onClick={() => setTab("counter")}>
+            Counter
+          </TabButton>
+          <TabButton
+            active={tab === "leaderboard"}
+            onClick={() => setTab("leaderboard")}
+          >
+            Leaderboard
+          </TabButton>
+        </nav>
+      </header>
+
+      <main className="mx-auto max-w-3xl px-6">
+        {tab === "counter" ? (
+          <CounterView counts={counts} session={sessionCount} onClick={click} />
+        ) : (
+          <div className="py-20 text-center text-neutral-500">
+            Leaderboard coming soon.
+          </div>
+        )}
+      </main>
+
+      {authOpen && <AuthDialog onClose={() => setAuthOpen(false)} />}
+    </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+        active
+          ? "border border-neutral-300 bg-white text-neutral-900"
+          : "text-neutral-500 hover:text-neutral-900",
+      ].join(" ")}
+    >
+      {children}
+    </button>
   );
 }

@@ -8,6 +8,6 @@ export default defineConfig({
   clean: true,
   dts: false,
   deps: {
-    neverBundle: ["mongoose", "express", "better-auth"],
+    neverBundle: ["mongodb", "express", "better-auth"],
   },
 });

@@ -3,6 +3,7 @@ import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { RegisterSchema } from "@click/shared";
 import { auth } from "./auth";
+import { getClicks, postClicks } from "./clicks";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const CLIENT_URL = process.env.CLIENT_URL ?? "http://localhost:5173";
@@ -30,6 +31,9 @@ app.post("/api/example/register-preview", (req, res) => {
   }
   res.json({ ok: true, data: parsed.data });
 });
+
+app.get("/api/clicks", getClicks);
+app.post("/api/clicks", postClicks);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
