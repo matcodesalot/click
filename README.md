@@ -33,7 +33,7 @@ You don't need to install Mongo or Redis on your host — they run in Docker.
 ## First-time setup
 
 ```bash
-git clone <repo-url> click
+git clone git@github.com:matcodesalot/click.git
 cd click
 npm install
 cp apps/server/.env.example apps/server/.env
